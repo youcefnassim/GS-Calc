@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light" data-lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Calculateur Professionnel de Déversement selon l'Eurocode 3 (EC3). Calculs ELU et ELS avec graphiques pour poutres en acier." />
+  <title>GS Calc — Calculateur de Déversement</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- ====== TOOLBAR ====== -->
+  <div class="toolbar" id="toolbar">
+    <div class="toolbar-left">
+      <img src="GS calc.jpg" alt="GS Calc" class="toolbar-logo">
+      <span class="toolbar-brand">GS Calc</span>
+    </div>
+    <div class="toolbar-actions">
+      <button class="tool-btn" id="btnLang" onclick="toggleLang()" title="Changer la langue / Switch language">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
+          stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path
+            d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+        <span id="langLabel">EN</span>
+      </button>
+      <button class="tool-btn" id="btnDark" onclick="toggleDarkMode()" title="Mode sombre">
+        <svg id="iconDark" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
+          stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        <svg id="iconLight" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
+          stroke-width="2" viewBox="0 0 24 24" style="display:none">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      </button>
+      <button class="tool-btn" onclick="shareURL()" title="Partager le calcul">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
+          stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+        </svg>
+        <span data-fr="Partager" data-en="Share">Partager</span>
+      </button>
+      <button class="tool-btn tool-btn--accent" onclick="exportPDF()" title="Exporter PDF">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
+          stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span data-fr="PDF" data-en="PDF">PDF</span>
+      </button>
+      <button class="tool-btn" onclick="exportCSV()" title="Exporter CSV">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor"
+          stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="8 17 12 21 16 17" />
+          <line x1="12" y1="12" x2="12" y2="21" />
+          <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29" />
+        </svg>
+        <span data-fr="CSV" data-en="CSV">CSV</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ====== MOBILE TABS ====== -->
+  <div class="mobile-tabs" id="mobileTabs">
+    <button class="mobile-tab active" onclick="switchMobileTab('input')" id="mTabInput" data-fr="Données"
+      data-en="Inputs">Données</button>
+    <button class="mobile-tab" onclick="switchMobileTab('results')" id="mTabResults" data-fr="Résultats"
+      data-en="Results">Résultats</button>
+    <button class="mobile-tab" onclick="switchMobileTab('graphs')" id="mTabGraphs" data-fr="Graphiques"
+      data-en="Graphs">Graphiques</button>
+  </div>
+
+  <!-- ====== STICKY SUMMARY BAR (Feature L) ====== -->
+  <div id="stickySummary" class="sticky-summary" style="display:none">
+    <div class="ss-item">
+      <span class="ss-label" data-fr="Profilé" data-en="Section">Profilé</span>
+      <span class="ss-value" id="ssProfile">—</span>
+    </div>
+    <div class="ss-divider"></div>
+    <div class="ss-item">
+      <span class="ss-label">MEd</span>
+      <span class="ss-value" id="ssMed">—</span>
+    </div>
+    <div class="ss-divider"></div>
+    <div class="ss-item">
+      <span class="ss-label">Mb,Rd</span>
+      <span class="ss-value" id="ssMbrd">—</span>
+    </div>
+    <div class="ss-divider"></div>
+    <div class="ss-item">
+      <span class="ss-label">ELU</span>
+      <span class="ss-badge" id="ssElu">—</span>
+    </div>
+    <div class="ss-divider"></div>
+    <div class="ss-item">
+      <span class="ss-label">ELS</span>
+      <span class="ss-badge" id="ssEls">—</span>
+    </div>
+    <button class="ss-close" onclick="document.getElementById('stickySummary').style.display='none'">✕</button>
+  </div>
+
+  <!-- ====== TOOLTIP BOX ====== -->
+  <div id="tooltipBox" class="tooltip-box" style="display:none"></div>
+
+  <div class="container">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-inner">
+        <div class="header-logo">
+          <img src="GS calc.jpg" alt="GS Calc Logo" class="logo-img">
+        </div>
+        <div class="header-text">
+          <h1 data-fr="Calculateur Professionnel de Déversement"
+            data-en="Professional Lateral-Torsional Buckling Calculator">Calculateur Professionnel de Déversement</h1>
+          <p data-fr="GS Calc — Vérification au déversement selon l'Eurocode 3"
+            data-en="GS Calc — LTB verification per Eurocode 3">GS Calc — Vérification au déversement selon
+            l'Eurocode 3</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <!-- ===== LEFT COLUMN ===== -->
+      <div class="mobile-section" id="sectionInput">
+        <div class="card">
+          <h2 data-fr="Caractéristiques de la poutre" data-en="Beam Properties">Caractéristiques de la poutre</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label data-fr="Profilé" data-en="Section">Profilé</label>
+              <select id="profile" onchange="updateProfile()">
+                <optgroup label="IPE">
+                  <option value="IPE200">IPE 200</option>
+                  <option value="IPE240">IPE 240</option>
+                  <option value="IPE270">IPE 270</option>
+                  <option value="IPE300" selected>IPE 300</option>
+                  <option value="IPE330">IPE 330</option>
+                  <option value="IPE360">IPE 360</option>
+                  <option value="IPE400">IPE 400</option>
+                  <option value="IPE450">IPE 450</option>
+                  <option value="IPE500">IPE 500</option>
+                </optgroup>
+                <optgroup label="HEA">
+                  <option value="HEA200">HEA 200</option>
+                  <option value="HEA240">HEA 240</option>
+                  <option value="HEA280">HEA 280</option>
+                  <option value="HEA300">HEA 300</option>
+                  <option value="HEA320">HEA 320</option>
+                  <option value="HEA340">HEA 340</option>
+                  <option value="HEA360">HEA 360</option>
+                </optgroup>
+                <optgroup label="HEB">
+                  <option value="HEB200">HEB 200</option>
+                  <option value="HEB240">HEB 240</option>
+                  <option value="HEB280">HEB 280</option>
+                  <option value="HEB300">HEB 300</option>
+                  <option value="HEB320">HEB 320</option>
+                  <option value="HEB340">HEB 340</option>
+                  <option value="HEB360">HEB 360</option>
+                </optgroup>
+                <optgroup label="IPN">
+                  <option value="IPN200">IPN 200</option>
+                  <option value="IPN240">IPN 240</option>
+                  <option value="IPN280">IPN 280</option>
+                  <option value="IPN300">IPN 300</option>
+                  <option value="IPN320">IPN 320</option>
+                  <option value="IPN340">IPN 340</option>
+                  <option value="IPN360">IPN 360</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="field">
+              <label data-fr="Classe de section" data-en="Section Class">Classe de section</label>
+              <select id="sectionClass" onchange="calculate()">
+                <option value="1" selected data-fr="Classe 1 (Plastique)" data-en="Class 1 (Plastic)">Classe 1
+                  (Plastique)</option>
+                <option value="2" data-fr="Classe 2 (Compacte)" data-en="Class 2 (Compact)">Classe 2 (Compacte)</option>
+                <option value="3" data-fr="Classe 3 (Semi-compacte)" data-en="Class 3 (Semi-compact)">Classe 3
+                  (Semi-compacte)</option>
+                <option value="4" data-fr="Classe 4 (Élancée)" data-en="Class 4 (Slender)">Classe 4 (Élancée)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label data-fr="Nuance d'acier" data-en="Steel Grade">Nuance d'acier</label>
+              <select id="steel" onchange="updateSteel()">
+                <option value="235">S235 (fy = 235 MPa)</option>
+                <option value="275">S275 (fy = 275 MPa)</option>
+                <option value="355" selected>S355 (fy = 355 MPa)</option>
+                <option value="420">S420 (fy = 420 MPa)</option>
+                <option value="460">S460 (fy = 460 MPa)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label data-fr="Longueur L (m)" data-en="Length L (m)">Longueur L (m)</label>
+              <input type="number" id="L" value="6.0" step="0.5" min="0.1">
+            </div>
+
+            <div class="field">
+              <label data-fr="Charge G (kN/m)" data-en="Dead Load G (kN/m)">Charge G (kN/m)</label>
+              <input type="number" id="Gk" value="15" step="1" min="0">
+            </div>
+
+            <div class="field">
+              <label data-fr="Charge Q (kN/m)" data-en="Live Load Q (kN/m)">Charge Q (kN/m)</label>
+              <input type="number" id="Qk" value="12" step="1" min="0">
+            </div>
+
+            <div class="field full-width">
+              <label data-fr="Type d'appui" data-en="Support Type">Type d'appui</label>
+              <select id="support" onchange="updateSupport()">
+                <option value="simply" data-fr="Simplement appuyée (articulé-articulé)"
+                  data-en="Simply supported (pin-pin)">Simplement appuyée (articulé-articulé)</option>
+                <option value="fixed" data-fr="Encastrée-encastrée" data-en="Fixed-fixed">Encastrée-encastrée</option>
+                <option value="mixed" data-fr="Encastrée-appuyée" data-en="Fixed-pin">Encastrée-appuyée</option>
+                <option value="cantilever" data-fr="Console (encastrée-libre)" data-en="Cantilever (fixed-free)">Console
+                  (encastrée-libre)</option>
+                <option value="doublecantilever" data-fr="Double console" data-en="Double cantilever">Double console
+                </option>
+                <option value="continuous" data-fr="Poutre continue 2 travées" data-en="Continuous beam (2 spans)">
+                  Poutre continue 2 travées</option>
+              </select>
+            </div>
+
+            <div class="field full-width">
+              <label data-fr="Type de chargement" data-en="Load Type">Type de chargement</label>
+              <select id="loading" onchange="updateLoading()">
+                <option value="udl" data-fr="Charge uniformément répartie" data-en="Uniformly distributed load">Charge
+                  uniformément répartie</option>
+                <option value="point" data-fr="Charge ponctuelle au milieu" data-en="Point load at midspan">Charge
+                  ponctuelle au milieu</option>
+                <option value="point_third" data-fr="Charge ponctuelle au tiers" data-en="Point load at third-point">
+                  Charge ponctuelle au tiers</option>
+                <option value="point_end" data-fr="Charge ponctuelle en extremité" data-en="Point load at end">Charge
+                  ponctuelle en extremité</option>
+                <option value="triangular" data-fr="Charge triangulaire" data-en="Triangular load">Charge triangulaire
+                </option>
+                <option value="moment" data-fr="Couple pur aux extrémités" data-en="Pure moment at ends">Couple pur aux
+                  extrémités</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>
+                <span data-fr="alphaLT (imperfection)" data-en="alphaLT (imperfection)">alphaLT (imperfection)</span>
+                <span class="tooltip-icon"
+                  data-tip="Facteur d'imperfection EC3 §6.3.2.2 — Courbe a (0.21): laminé h/b>2 — Courbe b (0.34): soudé h/b>2 — Courbe c (0.49): autres profilés — Courbe d (0.76): sections défavorables">?</span>
+              </label>
+              <select id="alphaLT">
+                <option value="0.21" data-fr="0.21 - Laminé (courbe a)" data-en="0.21 - Rolled (curve a)">0.21 - Laminé
+                  (courbe a)</option>
+                <option value="0.34" selected data-fr="0.34 - Soudé (courbe b)" data-en="0.34 - Welded (curve b)">0.34 -
+                  Soudé (courbe b)</option>
+                <option value="0.49" data-fr="0.49 - Général (courbe c)" data-en="0.49 - General (curve c)">0.49 -
+                  Général (courbe c)</option>
+                <option value="0.76" data-fr="0.76 - Défavorable (courbe d)" data-en="0.76 - Unfavourable (curve d)">
+                  0.76 - Défavorable (courbe d)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>
+                <span data-fr="zg (mm) - point d'application" data-en="zg (mm) - load application">zg (mm) - point
+                  d'application</span>
+                <span class="tooltip-icon"
+                  data-tip="Distance entre le point d'application de la charge et le centre de cisaillement (mm). Positif si la charge est appliquée au-dessus du centre → effet déstabilisant. Négatif si en dessous → effet stabilisant.">?</span>
+              </label>
+              <input type="number" id="zg" value="0" step="10">
+            </div>
+          </div>
+
+          <div class="coefficient-card">
+            <strong>
+              <span data-fr="Coefficients EC3 (C1, C2, C3) :" data-en="EC3 Coefficients (C1, C2, C3):">Coefficients EC3
+                (C1, C2, C3) :</span>
+              <span class="tooltip-icon"
+                data-tip="C1 : facteur de moment équivalent — C2 : facteur de position de la charge — C3 : facteur de position du centre de cisaillement. Déterminés selon le type d'appui et de chargement (ECCS, Annexe F).">?</span>
+            </strong><br>
+            <span id="c1Display">1.132</span> |
+            <span id="c2Display">0.459</span> |
+            <span id="c3Display">0.525</span>
+          </div>
+
+          <div class="button-group">
+            <button class="btn-primary" id="btnCalculer" onclick="calculate()" data-fr="Calculer"
+              data-en="Calculate">Calculer</button>
+            <button class="btn-secondary" id="btnCombinations" onclick="calculateCombinations()"
+              data-fr="Combinaisons ELU/ELS" data-en="ULS/SLS Combinations">Combinaisons ELU/ELS</button>
+            <button class="btn-outline" id="btnExample" onclick="resetToCantilever()" data-fr="Exemple console"
+              data-en="Cantilever example">Exemple console</button>
+            <button class="btn-outline" id="btnHistory" onclick="toggleHistory()" data-fr="Historique"
+              data-en="History">Historique</button>
+            <button class="btn-outline" id="btnSensitivity" onclick="toggleSensitivity()" data-fr="Sensibilité L"
+              data-en="L Sensitivity">Sensibilité L</button>
+          </div>
+        </div>
+
+        <!-- CROSS-SECTION PREVIEW (Feature A) -->
+        <div class="card" id="cardSection">
+          <h2 data-fr="Vue en coupe du profilé" data-en="Cross-Section View">Vue en coupe du profilé</h2>
+          <div id="sectionSVG" style="display:flex;justify-content:center;align-items:center;min-height:140px;"></div>
+          <div id="sectionDims" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;justify-content:center;">
+          </div>
+        </div>
+
+        <!-- SENSITIVITY SLIDER (Feature J) -->
+        <div id="sensitivityPanel" class="card" style="display:none">
+          <h2 data-fr="Analyse de sensibilité — L" data-en="Sensitivity Analysis — L">Analyse de sensibilité — L</h2>
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+              <span style="font-size:12px;color:var(--text-secondary);">1m</span>
+              <input type="range" id="sensitivitySlider" min="1" max="20" step="0.5" value="6"
+                oninput="updateSensitivity(this.value)" style="flex:1;accent-color:var(--accent-color);">
+              <span style="font-size:12px;color:var(--text-secondary);">20m</span>
+            </div>
+            <div style="text-align:center;margin-top:8px;font-size:13px;font-weight:700;color:var(--accent-color);">L =
+              <span id="sliderVal">6</span> m
+            </div>
+          </div>
+          <canvas id="sensitivityChart" height="220"></canvas>
+        </div>
+
+        <!-- OPTIMAL PROFILE SUGGESTION -->
+        <div id="optimalSuggestion" class="optimal-card" style="display:none"></div>
+
+        <!-- HISTORY PANEL -->
+        <div id="historyPanel" class="card history-panel" style="display:none">
+          <h2 data-fr="Historique des calculs" data-en="Calculation History">Historique des calculs</h2>
+          <div id="historyList"></div>
+          <button class="btn-outline" style="margin-top:12px;width:100%" onclick="clearHistory()"
+            data-fr="Effacer l'historique" data-en="Clear history">Effacer l'historique</button>
+        </div>
+      </div>
+
+      <!-- ===== RIGHT COLUMN ===== -->
+      <div class="mobile-section" id="sectionResults">
+        <div class="card" id="cardELU">
+          <h2 data-fr="Vérification ELU — Déversement" data-en="ULS Check — Lateral-Torsional Buckling">Vérification ELU
+            — Déversement</h2>
+          <div class="results-grid">
+            <div class="result-card">
+              <div class="label" data-fr="Moment critique Mcr" data-en="Critical Moment Mcr">Moment critique Mcr</div>
+              <div class="value" id="mcr">-</div>
+              <button class="copy-btn" onclick="copyValue('mcr')" title="Copier">⎘</button>
+            </div>
+            <div class="result-card">
+              <div class="label" data-fr="Élancement λ̄LT" data-en="Slenderness λ̄LT">Élancement λ̄LT
+                <span class="tooltip-icon"
+                  data-tip="Élancement réduit de déversement λ̄LT = √(Wpl·fy·βw / Mcr). Si λ̄LT ≤ 0.2 → pas de risque de déversement (χLT = 1).">?</span>
+              </div>
+              <div class="value" id="lambda">-</div>
+              <button class="copy-btn" onclick="copyValue('lambda')" title="Copier">⎘</button>
+            </div>
+            <div class="result-card">
+              <div class="label" data-fr="Coefficient χLT" data-en="Reduction factor χLT">Coefficient χLT
+                <span class="tooltip-icon"
+                  data-tip="Facteur de réduction au déversement χLT ∈ [0,1]. Calculé selon EC3 §6.3.2.2 à partir de ϕLT et αLT.">?</span>
+              </div>
+              <div class="value" id="chi">-</div>
+              <button class="copy-btn" onclick="copyValue('chi')" title="Copier">⎘</button>
+            </div>
+            <div class="result-card">
+              <div class="label" data-fr="Résistance Mb,Rd" data-en="Resistance Mb,Rd">Résistance Mb,Rd</div>
+              <div class="value" id="mbRd">-</div>
+              <button class="copy-btn" onclick="copyValue('mbRd')" title="Copier">⎘</button>
+            </div>
+          </div>
+          <!-- Utilization gauge (Features G/H) -->
+          <div class="utilization-bar-wrap" id="eluGaugeWrap" style="display:none">
+            <div class="util-label">
+              <span data-fr="Taux d'utilisation ELU" data-en="ULS Utilization rate">Taux d'utilisation ELU</span>
+              <span id="eluRatio" class="util-pct">0%</span>
+            </div>
+            <div class="util-track">
+              <div class="util-fill" id="eluFill"></div>
+            </div>
+          </div>
+          <div id="verificationELU" class="verification-box"></div>
+          <button class="btn-chi" onclick="openChiModal()" style="margin-top:14px" data-fr="📈 Voir la courbe χLT"
+            data-en="📈 View χLT curve">📈 Voir la courbe χLT</button>
+        </div>
+
+        <div class="card" id="cardELS">
+          <h2 data-fr="Vérification ELS — Flèche" data-en="SLS Check — Deflection">Vérification ELS — Flèche</h2>
+          <div class="results-grid">
+            <div class="result-card">
+              <div class="label" data-fr="Flèche maximale" data-en="Maximum deflection">Flèche maximale</div>
+              <div class="value" id="deflection">-</div>
+              <button class="copy-btn" onclick="copyValue('deflection')" title="Copier">⎘</button>
+            </div>
+            <div class="result-card">
+              <div class="label" data-fr="Flèche relative" data-en="Relative deflection">Flèche relative</div>
+              <div class="value" id="deflectionRel">-</div>
+            </div>
+            <div class="result-card">
+              <div class="label" data-fr="Limite L/250" data-en="Limit L/250">Limite L/250</div>
+              <div class="value" id="deflectionLimit">-</div>
+            </div>
+            <div class="result-card">
+              <div class="label" data-fr="Rapport δ/L" data-en="Ratio δ/L">Rapport δ/L</div>
+              <div class="value" id="deltaRatio">-</div>
+            </div>
+          </div>
+          <!-- Deflection gauge -->
+          <div class="utilization-bar-wrap" id="elsGaugeWrap" style="display:none">
+            <div class="util-label">
+              <span data-fr="Taux d'utilisation ELS (flèche)" data-en="SLS Deflection utilization">Taux d'utilisation
+                ELS</span>
+              <span id="elsRatio" class="util-pct">0%</span>
+            </div>
+            <div class="util-track">
+              <div class="util-fill" id="elsFill"></div>
+            </div>
+          </div>
+          <div id="verificationELS" class="verification-box"></div>
+        </div>
+
+        <div class="card" id="cardMech">
+          <h2 data-fr="Caractéristiques mécaniques" data-en="Mechanical Properties">Caractéristiques mécaniques</h2>
+          <table class="info-table">
+            <tr>
+              <td data-fr="Moment ELU MEd" data-en="ULS Moment MEd">Moment ELU MEd</td>
+              <td id="med">-</td>
+            </tr>
+            <tr>
+              <td data-fr="Module G" data-en="Shear Modulus G">Module G</td>
+              <td>80 769 MPa</td>
+            </tr>
+            <tr>
+              <td data-fr="Moment d'inertie Iz" data-en="Second moment Iz">Moment d'inertie Iz</td>
+              <td id="iz">-</td>
+            </tr>
+            <tr>
+              <td data-fr="Constante de torsion It" data-en="Torsion constant It">Constante de torsion It <span
+                  class="tooltip-icon"
+                  data-tip="Constante de torsion Saint-Venant It (cm⁴). Résistance à la torsion uniforme. Pour profilés en I: It ≈ Σ(b·t³/3).">?</span>
+              </td>
+              <td id="it">-</td>
+            </tr>
+            <tr>
+              <td data-fr="Constante de gauchissement Iw" data-en="Warping constant Iw">Constante de gauchissement Iw
+                <span class="tooltip-icon"
+                  data-tip="Constante de gauchissement (torsion non uniforme) Iw (cm⁶). Résistance au gauchissement des sections en I. Importante pour les grandes portées.">?</span>
+              </td>
+              <td id="iw">-</td>
+            </tr>
+            <tr>
+              <td data-fr="Module plastique Wpl,y" data-en="Plastic modulus Wpl,y">Module plastique Wpl,y</td>
+              <td id="wpl">-</td>
+            </tr>
+            <tr>
+              <td data-fr="Coefficient k (longueur)" data-en="Length factor k">Coefficient k (longueur) <span
+                  class="tooltip-icon"
+                  data-tip="Facteur de longueur effective k selon les conditions d'appui. k=1.0 (articulé-articulé), k=0.5 (encastré-encastré), k=0.7 (encastré-articulé), k=2.1 (console).">?</span>
+              </td>
+              <td id="kCoeff">-</td>
+            </tr>
+            <tr>
+              <td data-fr="Coefficient βw (classe)" data-en="Class factor βw">Coefficient βw (classe)</td>
+              <td id="betaW">-</td>
+            </tr>
+          </table>
+          <button class="btn-chi" style="margin-top:14px;width:100%" onclick="toggleCompare()"
+            data-fr="🔀 Comparer les profilés" data-en="🔀 Compare sections">🔀 Comparer les profilés</button>
+        </div>
+
+        <!-- COMPARE PANEL -->
+        <div id="comparePanel" class="card" style="display:none">
+          <h2 data-fr="Comparaison de profilés" data-en="Section Comparison">Comparaison de profilés</h2>
+          <div id="compareTable"></div>
+        </div>
+      </div>
+
+      <!-- ===== GRAPHS COLUMN ===== -->
+      <div class="card mobile-section graphs-card" id="sectionGraphs" style="grid-column: 1 / -1">
+        <h2 data-fr="Diagrammes des efforts" data-en="Force Diagrams">Diagrammes des efforts</h2>
+        <div class="tabs">
+          <button class="tab active" id="tabDiagram" onclick="switchTab('diagram')" data-fr="M(x) et V(x)"
+            data-en="M(x) and V(x)">M(x) et V(x)</button>
+          <button class="tab" id="tabDeformed" onclick="switchTab('deformed')" data-fr="Déformée"
+            data-en="Deformed shape">Déformée</button>
+          <button class="tab" id="tabLoad" onclick="switchTab('load')" data-fr="Chargement animé"
+            data-en="Animated Load">Chargement animé</button>
+        </div>
+
+        <div id="tab-diagram" class="tab-content active">
+          <div class="diagram-container">
+            <h3 style="margin-bottom:10px;font-size:16px;" data-fr="Diagramme du moment fléchissant M(x)"
+              data-en="Bending Moment Diagram M(x)">Diagramme du moment fléchissant M(x)</h3>
+            <canvas id="momentChart" width="800" height="280"></canvas>
+          </div>
+          <div class="diagram-container">
+            <h3 style="margin-bottom:10px;font-size:16px;" data-fr="Diagramme de l'effort tranchant V(x)"
+              data-en="Shear Force Diagram V(x)">Diagramme de l'effort tranchant V(x)</h3>
+            <canvas id="shearChart" width="800" height="280"></canvas>
+          </div>
+        </div>
+
+        <div id="tab-deformed" class="tab-content">
+          <div class="diagram-container">
+            <canvas id="deflectionChart" width="800" height="380"></canvas>
+          </div>
+        </div>
+
+        <!-- Animated Load Diagram (Feature K) -->
+        <div id="tab-load" class="tab-content">
+          <div class="diagram-container" style="text-align:center;">
+            <h3 style="margin-bottom:16px;font-size:15px;" data-fr="Schéma de chargement animé"
+              data-en="Animated Load Scheme">Schéma de chargement animé</h3>
+            <svg id="loadDiagramSVG" viewBox="0 0 600 200" width="100%" style="max-width:600px;"></svg>
+          </div>
+        </div>
+
+        <div style="margin-top:15px;">
+          <span class="pill"><i data-fr="Profil:" data-en="Section:">Profil:</i> <span id="pillProfile">IPE
+              300</span></span>
+          <span class="pill"><i data-fr="Appui:" data-en="Support:">Appui:</i> <span id="pillSupport">Simplement
+              appuyée</span></span>
+          <span class="pill"><i data-fr="Charge:" data-en="Load:">Charge:</i> <span id="pillLoading">Uniformément
+              répartie</span></span>
+          <span class="pill"><i>Mmax:</i> <span id="pillMmax">-</span> kN.m</span>
+        </div>
+        <div id="supportDiagram" class="support-svg-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== MODAL χLT CURVE ====== -->
+  <div id="chiModal" class="modal-overlay" style="display:none" onclick="closeChiModal(event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span data-fr="Courbe de réduction χLT — EC3" data-en="Reduction curve χLT — EC3">Courbe de réduction χLT —
+          EC3</span>
+        <button class="modal-close" onclick="closeChiModal(null)">✕</button>
+      </div>
+      <div class="modal-body">
+        <canvas id="chiChart" width="600" height="380"></canvas>
+        <div id="chiLegend" style="margin-top:14px;font-size:12px;color:var(--text-secondary);text-align:center"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="GS calc.jpg" alt="GS Calc" class="footer-logo">
+        <div>
+          <div class="footer-name">GS Calc</div>
+          <div class="footer-tagline" data-fr="Calcul professionnel de déversement"
+            data-en="Professional lateral-torsional buckling calculator">Calcul professionnel de déversement</div>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <div class="footer-col-title" data-fr="Normes" data-en="Standards">Normes</div>
+          <ul>
+            <li>EN 1993-1-1 (EC3)</li>
+            <li>NF EN 1993-1-1/NA</li>
+            <li data-fr="Méthode Générale §6.3.2" data-en="General Method §6.3.2">Méthode Générale §6.3.2</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title" data-fr="Fonctionnalités" data-en="Features">Fonctionnalités</div>
+          <ul>
+            <li data-fr="Vérification ELU" data-en="ULS Verification">Vérification ELU</li>
+            <li data-fr="Vérification ELS — Flèche" data-en="SLS — Deflection check">Vérification ELS — Flèche</li>
+            <li data-fr="Diagrammes M(x), V(x)" data-en="Diagrams M(x), V(x)">Diagrammes M(x), V(x)</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title" data-fr="Profilés supportés" data-en="Supported Sections">Profilés supportés
+          </div>
+          <ul>
+            <li>IPE — HEA — HEB — IPN</li>
+            <li data-fr="Aciers S235, S275, S355" data-en="Steel S235, S275, S355">Aciers S235, S275, S355</li>
+            <li>S420, S460</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span data-fr="© 2026 GS Calc. Tous droits réservés." data-en="© 2026 GS Calc. All rights reserved.">©
+        2026 GS Calc. Tous droits réservés.</span>
+      <span class="footer-disclaimer"
+        data-fr="Outil de vérification à usage pédagogique — Toujours valider avec un ingénieur qualifié."
+        data-en="Educational verification tool — Always validate with a qualified engineer.">Outil de vérification à
+        usage pédagogique — Toujours valider avec un ingénieur qualifié.</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
